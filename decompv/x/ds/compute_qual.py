@@ -34,6 +34,8 @@ from pynight.common_dict import (
     simple_obj,
     simple_obj_update,
 )
+
+
 ##
 ###
 def transformed_dataset_constructor_wrapper(ds_dict):
@@ -277,6 +279,8 @@ def compute_qual(
     extra_tqdm_name="",
     export_dir_suffix="_v7",
     device=None,
+    plot_output_p=False,
+    **kwargs,
 ):
     model_name = model_name_get(model)
 
@@ -483,6 +487,9 @@ def compute_qual(
             tds_torch_cpu=my_tds_torch_cpu,
             coco_p=coco_p,
             ##
+            plot_output_p=plot_output_p,
+            **kwargs,
+            ##
         )
 
     finally:
@@ -498,6 +505,7 @@ def compute_qual_clip(
     dataset_name,
     ds,
     batch_size=None,
+    **kwargs,
 ):
     compute_qual(
         ds,
@@ -506,6 +514,7 @@ def compute_qual_clip(
         model=model,
         tds_attn_get_fn=clip_tds_attn_get,
         device=None,
+        **kwargs,
     )
 
 
