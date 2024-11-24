@@ -3755,6 +3755,7 @@ def attributions_show2(
     token_i="auto",
     # token_i=0,
     title=None,
+    title_mode="verbose",
     normalize=["rank_uniform"],
     color_positive="viridis",
     scale=1,
@@ -3941,7 +3942,15 @@ def attributions_show2(
                 attributions = batch[attributions_col]
                 # ic(len(ids), torch_shape_get(attributions))
 
-                title_current = f"{title}{model_name}\nlabel: {label_natural}\nAttr: {attributions_col}\nnormalize_: {','.join(normalize_)}"
+                if title_mode == "verbose":
+                    title_current = f"{title}{model_name}\nlabel: {label_natural}\nAttr: {attributions_col}\nnormalize_: {','.join(normalize_)}"
+
+                elif title_mode == "minimal":
+                    title_current = f"{title}\nTarget: {label_natural}"
+
+                else:
+                    title_current = title
+
                 for top_i, label_id in enumerate(labels_topk):
                     prob = probs_topk[top_i]
                     if prob < 0.001:
@@ -3963,7 +3972,10 @@ def attributions_show2(
                             f"{fn_name_current()}: DATASET_NAME not supported: {DATASET_NAME}"
                         )
 
-                    title_current += f"\n{top_i + 1}. {prob_str}: {top_label_natural}"
+                    if title_mode == "verbose":
+                        title_current += (
+                            f"\n{top_i + 1}. {prob_str}: {top_label_natural}"
+                        )
 
                 attributions_current = attributions[image_i]
 
@@ -3988,7 +4000,8 @@ def attributions_show2(
                     ##
                 else:
                     if token_i_current:  #: not None or 0
-                        title_current += "\ntokei_i: {token_i_current}"
+                        if title_mode == "verbose":
+                            title_current += "\ntokei_i: {token_i_current}"
 
                     if token_i_current is not None:
                         attributions_current = attributions_current[token_i_current]
