@@ -4647,6 +4647,7 @@ def attributions_autoget(
     v,
     name=None,
     warn_cls_p=False,
+    verbose_p=True,
 ):
     try:
         # ic(name, torch_shape_get(v))
@@ -4660,7 +4661,7 @@ def attributions_autoget(
                 return v
 
             if v.shape[-1] == v.shape[-2]:  #: (batch, attr_to, attr_from,)
-                if warn_cls_p and name:
+                if warn_cls_p and name and verbose_p:
                     print(f"Selected CLS: {name}")
 
                 return v[..., 0, :]  #: Select attributions for the CLS token
@@ -4670,7 +4671,7 @@ def attributions_autoget(
                 return None
 
         elif v.ndim == 4:  #: (batch, head, attr_to, attr_from)
-            if name:
+            if name and verbose_p:
                 print(f"Dropped non-averaged heads: {name}")
 
             return None
@@ -5278,6 +5279,7 @@ def attn_prepare_attribution_columns(
             v = attributions_autoget(
                 v,
                 name=k,
+                verbose_p=verbose_p,
             )
             if v is None:
                 if verbose_p:
