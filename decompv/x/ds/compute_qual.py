@@ -424,7 +424,7 @@ def compute_qual(
             "DECOMPV_OUTLIER_QUANTILE",
             default=None,
         )
-        or "0"
+        or "0.01"
     )
     colormap = (
         getenv(
