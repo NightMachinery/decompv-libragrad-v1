@@ -275,6 +275,7 @@ def compute_qual(
     overlay_alone_p=False,
     batch_from=0,
     batch_to=9999,
+    title=None,
     extra_title="",
     extra_tqdm_name="",
     export_dir_suffix="_v7",
@@ -464,13 +465,19 @@ def compute_qual(
     ic(dataset_name, coco_p)
     ##
 
+    if title is None:
+        title = "{all_gbrands.compact_gbrand}\n{extra_title}"
+
+    elif extra_title:
+        title += "\n{extra_title}"
+
     try:
         attributions_show2(
             export_tlg_id=None,
             outlier_quantile=outlier_quantile,
             color_positive=colormap,
             tlg_msg=f"---\n\ngbrand: {all_gbrands.compact_gbrand}",
-            title=f"{all_gbrands.compact_gbrand}\n{extra_title}",
+            title=title,
             tqdm_name=tqdm_name,
             compact_gbrand=all_gbrands.compact_gbrand,
             export_dir=f"{ARTIFACTS_ROOT}/plots{export_dir_suffix}/{dataset_name}/oq{outlier_quantile}/",
