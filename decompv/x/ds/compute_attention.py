@@ -14,7 +14,6 @@ from decompv.x.bootstrap import (
 import decompv.x.ds.utils
 from decompv.x.ds.utils import *
 from decompv.x.ds.main import *
-from decompv.x.ds.main import tds_patches_imagenet
 from pynight.common_icecream import ic
 from pynight.common_iterable import to_iterable
 from pynight.common_torch import (
@@ -748,6 +747,8 @@ def attn_compute_global(
         dataset_end = dataset_end_global
 
     if tds_patches is None:
+        from decompv.x.ds.main import tds_patches_imagenet
+
         tds_patches = tds_patches_imagenet
 
     if dsmap_attn_opts is None:
