@@ -280,6 +280,7 @@ def compute_qual(
     export_dir_suffix="_v7",
     device=None,
     plot_output_p=False,
+    attributions_cols=None,
     **kwargs,
 ):
     model_name = model_name_get(model)
@@ -307,114 +308,115 @@ def compute_qual(
     my_tds_patches = ds_obj.tds_patches
     tds_attn = ds_obj.tds_attn
     ##
-    attributions_cols = []
-
     attributions_col_patterns = []
-    attributions_col_patterns += ["Image.*_s:(?:sum|RS|L2)"]
-    # attributions_col_patterns += ['^attributions_s_.*']
+    if attributions_cols is None:
+        attributions_cols = []
 
-    # attributions_cols += [
-    #     f"attributions_s_blocks__{i}__MeanAttn"
-    #     for i in range(0, 12)
-    # ]
-    # attributions_cols += [
-    #     # f"attributions_s_blocks__{i}__CAT_s:sum"
-    #     f"attributions_s_blocks__{i}__FGrad_s:sum"
-    #     for i in range(0, blocks_len)
-    # ]
+        attributions_col_patterns += ["Image.*_s:(?:sum|RS|L2)"]
+        # attributions_col_patterns += ['^attributions_s_.*']
 
-    print(f"Qual Submode: {qual_submode}", file=sys.stderr)
-    if qual_submode == "q_full_1":
-        attributions_cols += [
-            "attributions_s_rnd1",  #: random baseline
-            ##
-            "attributions_s_TokenTM",  #: TokenTM
-            ##
-            "attributions_s_MeanReLU__AttnGrad_Attn_ro_str50",  #: GenAtt
-            f"attributions_s_CAT_s:sum_AttnFrom_sum_to{blocks_len - 1}",  #: AttCAT
-            ##
-            f"attributions_s_blocks__{blocks_len - 1}__MeanAttn",  #: RawAtt
-            "attributions_s_MeanAttn_ro_str50",  #: AttnRoll
-            ##
-            # "attributions_s_blocks__7__XACAM_s:sum",
-            f"attributions_s_blocks__{blocks_len - 1}__XACAM_s:sum",  #: XGradCAM+
-            f"attributions_s_blocks__{blocks_len - 1}__GCAM_s:sum",  #: GradCAM
-            # f"attributions_s_blocks__{blocks_len - 1}__GCAM_s:RS",
-            "attributions_s_GCAM_s:sum_sum",  #: GradCAM-PLUS
-            "attributions_s_XACAM_s:sum_sum",  #: XGradCAM+-PLUS
-            ##
-            f"attributions_s_blocks__0__FGrad_s:sum",  #: FullGrad
-            f"attributions_s_blocks__0__FGrad_s:RS",
-            f"attributions_s_blocks__0__CAT_s:sum",  #: IxG (IG, DecompX, AttnLRP, AliLRP)
-            f"attributions_s_blocks__0__CAT_s:RS",
-            f"attributions_s_blocks__{blocks_len - 1}__CAT_s:sum",  #: HiResCAM
-            f"attributions_s_blocks__{blocks_len - 1}__CAT_s:RS",  #: GradCAMElementWise
-            f"attributions_s_blocks__{(blocks_len // 2) + 1}__CAT_s:sum",
-            f"attributions_s_blocks__{(blocks_len // 2) + 1}__CAT_s:RS",
-            ##
-            #: CAT
-            "attributions_s_CAT_s:sum_sum",
-            "attributions_s_CAT_s:RS_sum",
-            ##
-            #: IxG SkipPLUS (e.g., DecompX+S)
-            f"attributions_s_CAT_s:sum_sum_f{blocks_len // 2}",
-            f"attributions_s_CAT_s:RS_sum_f{blocks_len // 2}",
-            ##
-            #: FullGrad+-PLUS
-            "attributions_s_CAT_s:sum_sum_FGrad_s:sum",
-            "attributions_s_CAT_s:RS_sum_FGrad_s:RS",
-            ##
-            #: FullGrad+-SkipPLUS
-            f"attributions_s_CAT_s:sum_sum_f{blocks_len // 2}_FGrad_s:sum",
-            f"attributions_s_CAT_s:RS_sum_f{blocks_len // 2}_FGrad_s:RS",
-            ##
-            #: FullGrad-PLUS
-            "attributions_s_FGrad_s:sum_sum",
-            "attributions_s_FGrad_s:RS_sum",
-            ##
-        ]
+        # attributions_cols += [
+        #     f"attributions_s_blocks__{i}__MeanAttn"
+        #     for i in range(0, 12)
+        # ]
+        # attributions_cols += [
+        #     # f"attributions_s_blocks__{i}__CAT_s:sum"
+        #     f"attributions_s_blocks__{i}__FGrad_s:sum"
+        #     for i in range(0, blocks_len)
+        # ]
 
-        if True:
-            #: Filter out any items containing =_s:RS= from attributions_cols:
-            attributions_cols = [col for col in attributions_cols if "_s:RS" not in col]
+        print(f"Qual Submode: {qual_submode}", file=sys.stderr)
+        if qual_submode == "q_full_1":
+            attributions_cols += [
+                "attributions_s_rnd1",  #: random baseline
+                ##
+                "attributions_s_TokenTM",  #: TokenTM
+                ##
+                "attributions_s_MeanReLU__AttnGrad_Attn_ro_str50",  #: GenAtt
+                f"attributions_s_CAT_s:sum_AttnFrom_sum_to{blocks_len - 1}",  #: AttCAT
+                ##
+                f"attributions_s_blocks__{blocks_len - 1}__MeanAttn",  #: RawAtt
+                "attributions_s_MeanAttn_ro_str50",  #: AttnRoll
+                ##
+                # "attributions_s_blocks__7__XACAM_s:sum",
+                f"attributions_s_blocks__{blocks_len - 1}__XACAM_s:sum",  #: XGradCAM+
+                f"attributions_s_blocks__{blocks_len - 1}__GCAM_s:sum",  #: GradCAM
+                # f"attributions_s_blocks__{blocks_len - 1}__GCAM_s:RS",
+                "attributions_s_GCAM_s:sum_sum",  #: GradCAM-PLUS
+                "attributions_s_XACAM_s:sum_sum",  #: XGradCAM+-PLUS
+                ##
+                f"attributions_s_blocks__0__FGrad_s:sum",  #: FullGrad
+                f"attributions_s_blocks__0__FGrad_s:RS",
+                f"attributions_s_blocks__0__CAT_s:sum",  #: IxG (IG, DecompX, AttnLRP, AliLRP)
+                f"attributions_s_blocks__0__CAT_s:RS",
+                f"attributions_s_blocks__{blocks_len - 1}__CAT_s:sum",  #: HiResCAM
+                f"attributions_s_blocks__{blocks_len - 1}__CAT_s:RS",  #: GradCAMElementWise
+                f"attributions_s_blocks__{(blocks_len // 2) + 1}__CAT_s:sum",
+                f"attributions_s_blocks__{(blocks_len // 2) + 1}__CAT_s:RS",
+                ##
+                #: CAT
+                "attributions_s_CAT_s:sum_sum",
+                "attributions_s_CAT_s:RS_sum",
+                ##
+                #: IxG SkipPLUS (e.g., DecompX+S)
+                f"attributions_s_CAT_s:sum_sum_f{blocks_len // 2}",
+                f"attributions_s_CAT_s:RS_sum_f{blocks_len // 2}",
+                ##
+                #: FullGrad+-PLUS
+                "attributions_s_CAT_s:sum_sum_FGrad_s:sum",
+                "attributions_s_CAT_s:RS_sum_FGrad_s:RS",
+                ##
+                #: FullGrad+-SkipPLUS
+                f"attributions_s_CAT_s:sum_sum_f{blocks_len // 2}_FGrad_s:sum",
+                f"attributions_s_CAT_s:RS_sum_f{blocks_len // 2}_FGrad_s:RS",
+                ##
+                #: FullGrad-PLUS
+                "attributions_s_FGrad_s:sum_sum",
+                "attributions_s_FGrad_s:RS_sum",
+                ##
+            ]
 
-    elif qual_submode == "q_pruned_1":
-        attributions_cols += [
-            "attributions_s_XACAM_s:sum_sum",  #: XGradCAM+-PLUS
-            ##
-            f"attributions_s_blocks__0__FGrad_s:sum",  #: FullGrad
-            f"attributions_s_blocks__0__CAT_s:sum",  #: IxG (IG, DecompX, AttnLRP, AliLRP)
-            ##
-            #: CAT
-            "attributions_s_CAT_s:sum_sum",
-            ##
-            #: IxG SkipPLUS (e.g., DecompX+S)
-            f"attributions_s_CAT_s:sum_sum_f{blocks_len // 2}",
-            ##
-            #: FullGrad+-PLUS
-            "attributions_s_CAT_s:sum_sum_FGrad_s:sum",
-            ##
-            #: FullGrad+-SkipPLUS
-            f"attributions_s_CAT_s:sum_sum_f{blocks_len // 2}_FGrad_s:sum",
-            ##
-            #: FullGrad-PLUS
-            # "attributions_s_FGrad_s:sum_sum",
-            ##
-        ]
+            if True:
+                #: Filter out any items containing =_s:RS= from attributions_cols:
+                attributions_cols = [col for col in attributions_cols if "_s:RS" not in col]
 
-    elif qual_submode == "q_CAM_1":
-        attributions_col_patterns = []
+        elif qual_submode == "q_pruned_1":
+            attributions_cols += [
+                "attributions_s_XACAM_s:sum_sum",  #: XGradCAM+-PLUS
+                ##
+                f"attributions_s_blocks__0__FGrad_s:sum",  #: FullGrad
+                f"attributions_s_blocks__0__CAT_s:sum",  #: IxG (IG, DecompX, AttnLRP, AliLRP)
+                ##
+                #: CAT
+                "attributions_s_CAT_s:sum_sum",
+                ##
+                #: IxG SkipPLUS (e.g., DecompX+S)
+                f"attributions_s_CAT_s:sum_sum_f{blocks_len // 2}",
+                ##
+                #: FullGrad+-PLUS
+                "attributions_s_CAT_s:sum_sum_FGrad_s:sum",
+                ##
+                #: FullGrad+-SkipPLUS
+                f"attributions_s_CAT_s:sum_sum_f{blocks_len // 2}_FGrad_s:sum",
+                ##
+                #: FullGrad-PLUS
+                # "attributions_s_FGrad_s:sum_sum",
+                ##
+            ]
 
-        attributions_cols = [
-            f"attributions_s_blocks__{blocks_len - 1}__GCAM_s:sum",  #: GradCAM
-            "attributions_s_GCAM_s:sum_sum",  #: GradCAM-PLUS
-            f"attributions_s_blocks__{blocks_len - 1}__XACAM_s:sum",  #: XGradCAM+
-            "attributions_s_XACAM_s:sum_sum",  #: XGradCAM+-PLUS
-            ##
-        ]
+        elif qual_submode == "q_CAM_1":
+            attributions_col_patterns = []
 
-    else:
-        raise ValueError(f"Unknown qual_submode: {qual_submode}")
+            attributions_cols = [
+                f"attributions_s_blocks__{blocks_len - 1}__GCAM_s:sum",  #: GradCAM
+                "attributions_s_GCAM_s:sum_sum",  #: GradCAM-PLUS
+                f"attributions_s_blocks__{blocks_len - 1}__XACAM_s:sum",  #: XGradCAM+
+                "attributions_s_XACAM_s:sum_sum",  #: XGradCAM+-PLUS
+                ##
+            ]
+
+        else:
+            raise ValueError(f"Unknown qual_submode: {qual_submode}")
 
     outlier_quantile = float(
         getenv(
